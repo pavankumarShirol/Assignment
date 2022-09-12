@@ -1,0 +1,89 @@
+// Write a Java program to implement the following scenario:
+
+// a) Create a file named Integers.txt and insert n-random integers into it
+// b) Create three threads T1, T2 and T3 that read n/3 integers in sequence of occurrence of
+// numbers from the file and sort the read n/3 integers
+// c) Thread T4 waits for all the threads T1, T2 and T3 to complete sorting, then sorts and outputs
+// the entire list of sorted numbers to another file named SortedIntegers.txt
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Scanner;
+
+public class Threads{
+    private static int arr[];
+
+    public static void main(String[] args) throws FileNotFoundException, InterruptedException, IOException {
+        File ipFile = new File("Integers.txt");
+        File opFile = new File("SortedIntegers.txt");
+
+        FileWriter opWriter = new FileWriter(opFile);
+
+        Scanner sc = new Scanner(ipFile);
+        int size = sc.nextInt();
+
+        arr = new int[size];
+        int i = 0;
+        while (sc.hasNext()) {
+            arr[i++] = sc.nextInt();
+        }
+        sc.close();
+
+        Thread T1 = new Thread() {
+            public void run() {
+                ThreadSorting(arr, 0, (size / 3) - 1);
+            }
+        };
+
+        Thread T2 = new Thread() {
+            public void run() {
+                ThreadSorting(arr, (size / 3), ((size / 3) * 2) - 1);
+            }
+        };
+
+        Thread T3 = new Thread() {
+            public void run() {
+                ThreadSorting(arr, ((size / 3) * 2), (size - 1));
+            }
+        };
+
+        Thread T4 = new Thread() {
+            public void run() {
+                ThreadSorting(arr, 0, size - 1);
+            }
+        };
+
+        T1.start();
+        T1.join();
+        T2.start();
+        T2.join();
+        T3.start();
+        T3.join();
+        T4.start();
+        T4.join();
+
+        for (int num : arr) {
+            opWriter.append(String.valueOf(num) + " ");
+        }
+        opWriter.close();
+    }
+
+    public static void ThreadSorting(int arr[], int start, int end) {
+        int tempArr[] = new int[end - start + 1];
+        int tempIndex = 0;
+        for (int i = start; i <= end; i++) {
+            tempArr[tempIndex++] = arr[i];
+        }
+        Arrays.sort(tempArr);
+        int index = start;
+
+        for (int n : tempArr) {
+            arr[index++] = n;
+        }
+
+    }
+
+}
